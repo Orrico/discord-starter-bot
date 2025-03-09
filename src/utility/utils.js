@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import config from '../../config.json' with { type: 'json' };
+import logger from './logger.js';
 
 export async function DiscordRequest(endpoint, options) {
   // append endpoint to root API URL
@@ -6,22 +8,31 @@ export async function DiscordRequest(endpoint, options) {
   // Stringify payloads
   if (options.body) options.body = JSON.stringify(options.body);
   // Use fetch to make requests
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
-      'Content-Type': 'application/json; charset=UTF-8',
-      'User-Agent': 'DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)',
-    },
-    ...options
-  });
-  // throw API errors
-  if (!res.ok) {
-    const data = await res.json();
-    console.log(res.status);
-    throw new Error(JSON.stringify(data));
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
+        'Content-Type': 'application/json; charset=UTF-8',
+        'User-Agent': `${config.appName}/${process.env.npm_package_version}`,
+      },
+      ...options
+    });
+    
+    // throw API errors
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      logger.error(`Discord API Error (${res.status}):`, { status: res.status, data });
+      throw new Error(`Discord API Error: ${res.status} - ${data.message || 'Unknown error'}`);
+    }
+    
+    // return original response
+    return res;
+  } catch (err) {
+    if (!err.message.includes('Discord API Error')) {
+      logger.error('Network or parsing error:', { error: err.message, stack: err.stack });
+    }
+    throw err;
   }
-  // return original response
-  return res;
 }
 
 export async function InstallGlobalCommands(appId, commands) {
@@ -32,7 +43,7 @@ export async function InstallGlobalCommands(appId, commands) {
     // This is calling the bulk overwrite endpoint: https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-global-application-commands
     await DiscordRequest(endpoint, { method: 'PUT', body: commands });
   } catch (err) {
-    console.error(err);
+    logger.error('Error installing commands:', { error: err.message, stack: err.stack });
   }
 }
 

@@ -7,19 +7,51 @@ import {
   verifyKeyMiddleware,
 } from 'discord-interactions';
 import { loadCommands, getCommand } from './src/utility/commandHandler.js';
-import { initDatabase } from './src/utility/database.js'; // Add this line
+import { initDatabase } from './src/utility/database.js';
+import logger from './src/utility/logger.js';
 
 // Create an express app
 const app = express();
 // Get port, or default to 3000
 const PORT = config.appPort || 3000;
 
+// Use request logging middleware
+app.use(logger.requestLogger);
+
+// Simple rate limiting middleware
+const rateLimit = new Map();
+function rateLimiter(req, res, next) {
+  const ip = req.ip;
+  const now = Date.now();
+  
+  // Clean up old entries
+  if (rateLimit.has(ip)) {
+    const requests = rateLimit.get(ip).filter(time => now - time < 60000);
+    rateLimit.set(ip, requests);
+    
+    // Check if too many requests
+    if (requests.length >= 50) {
+      logger.warn('Rate limit exceeded', { ip });
+      return res.status(429).json({ error: 'Too many requests, please try again later' });
+    }
+    
+    requests.push(now);
+  } else {
+    rateLimit.set(ip, [now]);
+  }
+  
+  next();
+}
+
+// Use rate limiting middleware
+app.use(rateLimiter);
+
 // Initialize database
 initDatabase();
 
 // Load commands
 loadCommands().then(() => {
-  console.log('Commands loaded successfully');
+  logger.info('Commands loaded successfully');
 });
 
 /**
@@ -49,23 +81,35 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     
     if (command) {
       try {
+        // Log command execution
+        logger.debug('Executing command', { 
+          command: name, 
+          user: req.body.member?.user?.id || 'unknown'
+        });
+        
         // Execute the command and send the response
         const response = await command.execute(req.body);
         return res.send(response);
       } catch (error) {
-        console.error(`Error executing command ${name}:`, error);
+        logger.error(`Error executing command ${name}:`, { 
+          error: error.message,
+          stack: error.stack
+        });
         return res.status(500).json({ error: 'Command execution failed' });
       }
     }
 
-    console.error(`unknown command: ${name}`);
+    logger.warn('Unknown command received', { command: name });
     return res.status(400).json({ error: 'unknown command' });
   }
 
-  console.error('unknown interaction type', type);
+  logger.warn('Unknown interaction type', { type });
   return res.status(400).json({ error: 'unknown interaction type' });
 });
 
 app.listen(PORT, () => {
-  console.log('Listening on port', PORT);
+  logger.info(`Server started on port ${PORT}`, {
+    env: process.env.NODE_ENV || 'development',
+    appName: config.appName
+  });
 });

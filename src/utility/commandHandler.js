@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import logger from './logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,12 +30,12 @@ export async function loadCommands() {
       // Validate command structure
       if (commandModule.data && commandModule.execute) {
         commands.set(commandModule.data.name, commandModule);
-        console.log(`Loaded command: ${commandModule.data.name}`);
+        logger.info(`Loaded command: ${commandModule.data.name}`);
       } else {
-        console.warn(`Command at ${commandFile} is missing required properties`);
+        logger.warn(`Command at ${commandFile} is missing required properties`);
       }
     } catch (error) {
-      console.error(`Error loading command from ${commandFile}:`, error);
+      logger.error(`Error loading command from ${commandFile}:`, { error: error.message, stack: error.stack });
     }
   }
   

@@ -1,5 +1,6 @@
 import { InteractionResponseType } from 'discord-interactions';
 import { saveData } from '../../utility/database.js';
+import logger from '../../utility/logger.js';
 
 // Command definition
 export const data = {
@@ -31,6 +32,25 @@ export async function execute(interaction) {
     const key = interaction.data.options.find(opt => opt.name === 'key').value;
     const value = interaction.data.options.find(opt => opt.name === 'value').value;
 
+    // Add input validation
+    if (key.length > 100) {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: 'Error: Key must be less than 100 characters.',
+        },
+      };
+    }
+
+    if (value.length > 1000) {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: 'Error: Value must be less than 1000 characters.',
+        },
+      };
+    }
+
     // Save to database
     const result = saveData(user.id, key, value);
 
@@ -45,7 +65,7 @@ export async function execute(interaction) {
       },
     };
   } catch (error) {
-    console.error('Error saving data:', error);
+    logger.error('Error saving data:', { error: error.message, stack: error.stack, userId: interaction.member?.user?.id });
     return {
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       data: {

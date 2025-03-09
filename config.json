@@ -3,5 +3,10 @@
     "appDesc": "Discord bot for manager guilds",
     "appID": "1346897405177630760",
     "database": "./src/db/data.db",
-    "appPort": 3000
+    "appPort": 3000,
+    "logging": {
+        "level": "info",
+        "fileRotationSize": 5242880,
+        "maxFiles": 5
+    }
 }
