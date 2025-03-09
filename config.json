@@ -1,0 +1,7 @@
+{
+    "appName":"Anubis",
+    "appDesc": "Discord bot for manager guilds",
+    "appID": "1346897405177630760",
+    "database": "./src/db/data.db",
+    "appPort": 3000
+}
