@@ -17,57 +17,105 @@ if (!fs.existsSync(dbDir)) {
 // Initialize database connection
 const db = new Database(path.resolve(__dirname, '..', '..', config.database));
 
+// Prepared statements container
+const statements = {
+  saveData: null,
+  getData: null,
+  updateData: null,
+  deleteData: null,
+};
+
 // Initialize database with required tables
 export function initDatabase() {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS saved_data (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT NOT NULL,
-      key TEXT NOT NULL,
-      value TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+  try {
+    // Create tables if they don't exist
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS saved_data (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        key TEXT NOT NULL,
+        value TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, key)
+      );
+      
+      -- Add indexes for frequently queried fields
+      CREATE INDEX IF NOT EXISTS idx_user_key ON saved_data(user_id, key);
+    `);
     
-    -- Add indexes for frequently queried fields
-    CREATE INDEX IF NOT EXISTS idx_user_key ON saved_data(user_id, key);
-  `);
-  logger.info('Database initialized successfully');
-  return db;
+    // Prepare statements once
+    statements.saveData = db.prepare(`
+      INSERT INTO saved_data (user_id, key, value) 
+      VALUES (?, ?, ?)
+      ON CONFLICT(user_id, key) DO UPDATE SET value = excluded.value
+    `);
+    
+    statements.getData = db.prepare(`
+      SELECT * FROM saved_data 
+      WHERE user_id = ? AND key = ? 
+      ORDER BY created_at DESC LIMIT 1
+    `);
+    
+    statements.updateData = db.prepare(`
+      UPDATE saved_data SET value = ? 
+      WHERE user_id = ? AND key = ?
+    `);
+    
+    statements.deleteData = db.prepare(`
+      DELETE FROM saved_data 
+      WHERE user_id = ? AND key = ?
+    `);
+    
+    logger.info('Database and prepared statements initialized successfully');
+    return db;
+  } catch (error) {
+    logger.error('Failed to initialize database:', { error: error.message, stack: error.stack });
+    throw error;
+  }
 }
 
 // Update existing data in database
 export function updateData(userId, key, value) {
-  const stmt = db.prepare('UPDATE saved_data SET value = ? WHERE user_id = ? AND key = ?');
-  const result = stmt.run(value, userId, key);
-  return result;
+  try {
+    const result = statements.updateData.run(value, userId, key);
+    return result;
+  } catch (error) {
+    logger.error('Error updating data:', { error: error.message, userId, key });
+    return { changes: 0 };
+  }
 }
 
-// Save or update data in database
+// Save data with optimized upsert operation
 export function saveData(userId, key, value) {
-  // Check if data exists
-  const existing = getData(userId, key);
-  
-  if (existing) {
-    // Update existing data
-    return updateData(userId, key, value);
-  } else {
-    // Insert new data
-    const stmt = db.prepare('INSERT INTO saved_data (user_id, key, value) VALUES (?, ?, ?)');
-    return stmt.run(userId, key, value);
+  try {
+    // Direct upsert using prepared statement (replaces check-then-update pattern)
+    const result = statements.saveData.run(userId, key, value, value);
+    return result;
+  } catch (error) {
+    logger.error('Error saving data:', { error: error.message, userId, key });
+    return { changes: 0 };
   }
 }
 
 // Get data from database
 export function getData(userId, key) {
-  const stmt = db.prepare('SELECT * FROM saved_data WHERE user_id = ? AND key = ? ORDER BY created_at DESC LIMIT 1');
-  return stmt.get(userId, key);
+  try {
+    return statements.getData.get(userId, key);
+  } catch (error) {
+    logger.error('Error getting data:', { error: error.message, userId, key });
+    return null;
+  }
 }
 
 // Delete data from database
 export function deleteData(userId, key) {
-  const stmt = db.prepare('DELETE FROM saved_data WHERE user_id = ? AND key = ?');
-  const result = stmt.run(userId, key);
-  return result;
+  try {
+    const result = statements.deleteData.run(userId, key);
+    return result;
+  } catch (error) {
+    logger.error('Error deleting data:', { error: error.message, userId, key });
+    return { changes: 0 };
+  }
 }
 
 // Export database instance

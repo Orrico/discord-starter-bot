@@ -20,13 +20,16 @@ app.use(logger.requestLogger);
 
 // Simple rate limiting middleware
 const rateLimit = new Map();
+const RATE_LIMIT_RESET = 60000; // 60 seconds in ms
+const CLEANUP_INTERVAL = 10 * 60 * 1000; // 10 minutes
+
 function rateLimiter(req, res, next) {
   const ip = req.ip;
   const now = Date.now();
   
   // Clean up old entries
   if (rateLimit.has(ip)) {
-    const requests = rateLimit.get(ip).filter(time => now - time < 60000);
+    const requests = rateLimit.get(ip).filter(time => now - time < RATE_LIMIT_RESET);
     rateLimit.set(ip, requests);
     
     // Check if too many requests
@@ -42,6 +45,17 @@ function rateLimiter(req, res, next) {
   
   next();
 }
+
+// Add periodic cleanup to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, times] of rateLimit.entries()) {
+    // Remove IP entries with no recent requests
+    if (times.length === 0 || now - Math.max(...times) > RATE_LIMIT_RESET * 2) {
+      rateLimit.delete(ip);
+    }
+  }
+}, CLEANUP_INTERVAL);
 
 // Use rate limiting middleware
 app.use(rateLimiter);

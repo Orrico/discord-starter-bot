@@ -1,6 +1,7 @@
 import { InteractionResponseType } from 'discord-interactions';
 import { saveData } from '../../utility/database.js';
 import logger from '../../utility/logger.js';
+import { sanitizeInput } from '../../utility/sanitize.js';
 
 // Command definition
 export const data = {
@@ -29,8 +30,12 @@ export const data = {
 export async function execute(interaction) {
   try {
     const { user } = interaction.member;
-    const key = interaction.data.options.find(opt => opt.name === 'key').value;
-    const value = interaction.data.options.find(opt => opt.name === 'value').value;
+    const keyRaw = interaction.data.options.find(opt => opt.name === 'key').value;
+    const valueRaw = interaction.data.options.find(opt => opt.name === 'value').value;
+    
+    // Sanitize inputs
+    const key = sanitizeInput(keyRaw);
+    const value = sanitizeInput(valueRaw);
 
     // Add input validation
     if (key.length > 100) {
