@@ -5,8 +5,18 @@ import logger from './logger.js';
 export async function DiscordRequest(endpoint, options) {
   // append endpoint to root API URL
   const url = 'https://discord.com/api/v10/' + endpoint;
+  
+  // Set default timeout
+  const requestOptions = {
+    timeout: 10000, // 10 second timeout
+    ...options
+  };
+  
   // Stringify payloads
-  if (options.body) options.body = JSON.stringify(options.body);
+  if (requestOptions.body) {
+    requestOptions.body = JSON.stringify(requestOptions.body);
+  }
+  
   // Use fetch to make requests
   try {
     const res = await fetch(url, {
@@ -15,21 +25,30 @@ export async function DiscordRequest(endpoint, options) {
         'Content-Type': 'application/json; charset=UTF-8',
         'User-Agent': `${config.appName}/${process.env.npm_package_version}`,
       },
-      ...options
+      ...requestOptions
     });
     
     // throw API errors
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      logger.error(`Discord API Error (${res.status}):`, { status: res.status, data });
-      throw new Error(`Discord API Error: ${res.status} - ${data.message || 'Unknown error'}`);
+      const status = res.status;
+      
+      // Handle rate limiting specially
+      if (status === 429) {
+        const retryAfter = res.headers.get('retry-after') || 5;
+        logger.warn(`Discord API rate limited. Retry after ${retryAfter}s`, { status, endpoint });
+        throw new Error(`Discord API rate limited. Retry after ${retryAfter}s`);
+      }
+      
+      logger.error(`Discord API Error (${status}):`, { status, data, endpoint });
+      throw new Error(`Discord API Error: ${status} - ${data.message || 'Unknown error'}`);
     }
     
     // return original response
     return res;
   } catch (err) {
     if (!err.message.includes('Discord API Error')) {
-      logger.error('Network or parsing error:', { error: err.message, stack: err.stack });
+      logger.error('Network or parsing error:', { error: err.message, stack: err.stack, endpoint });
     }
     throw err;
   }

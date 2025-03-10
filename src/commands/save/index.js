@@ -37,6 +37,35 @@ export async function execute(interaction) {
     const key = sanitizeInput(keyRaw);
     const value = sanitizeInput(valueRaw);
 
+    // Add more validation
+    if (!key || key.trim() === '') {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: 'Error: Key cannot be empty.',
+        },
+      };
+    }
+
+    if (!value || value.trim() === '') {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: 'Error: Value cannot be empty.',
+        },
+      };
+    }
+
+    // Validate key format (alphanumeric and underscores only)
+    if (!/^[a-zA-Z0-9_]+$/.test(key)) {
+      return {
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: 'Error: Key must contain only letters, numbers, and underscores.',
+        },
+      };
+    }
+
     // Add input validation
     if (key.length > 100) {
       return {

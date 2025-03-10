@@ -92,3 +92,48 @@
 2025-03-09 19:21:07 [info]: Loaded command: save {"metadata":{}}
 2025-03-09 19:21:07 [info]: Loaded command: test {"metadata":{}}
 2025-03-09 19:21:07 [info]: Commands loaded successfully {"metadata":{}}
+2025-03-09 22:54:36 [info]: Database and prepared statements initialized successfully {"metadata":{}}
+2025-03-09 22:54:36 [info]: Server started on port 3000 {"metadata":{"env":"development","appName":"Anubis"}}
+2025-03-09 22:54:36 [info]: Loaded command: save {"metadata":{}}
+2025-03-09 22:54:36 [info]: Loaded command: test {"metadata":{}}
+2025-03-09 22:54:36 [info]: Commands loaded successfully {"metadata":{}}
+2025-03-09 23:41:09 [info]: Database and prepared statements initialized successfully {"metadata":{}}
+2025-03-09 23:41:09 [info]: Server started on port 3000 {"metadata":{"env":"development","appName":"Anubis"}}
+2025-03-09 23:41:09 [info]: Loaded command: save {"metadata":{}}
+2025-03-09 23:41:09 [info]: Loaded command: test {"metadata":{}}
+2025-03-09 23:41:09 [info]: Commands loaded successfully {"metadata":{}}
+2025-03-09 23:50:24 [info]: Database and prepared statements initialized successfully {"metadata":{}}
+2025-03-09 23:50:24 [info]: Server started on port 3000 {"metadata":{"env":"development","appName":"Anubis"}}
+2025-03-09 23:50:24 [info]: Loaded command: save {"metadata":{}}
+2025-03-09 23:50:24 [info]: Loaded command: test {"metadata":{}}
+2025-03-09 23:50:24 [info]: Commands loaded successfully {"metadata":{}}
+2025-03-09 23:50:38 [info]: Received SIGINT signal, shutting down gracefully {"metadata":{}}
+2025-03-09 23:53:35 [info]: Database and prepared statements initialized successfully {"metadata":{}}
+2025-03-09 23:53:35 [info]: Server started on port 3000 {"metadata":{"env":"development","appName":"Anubis"}}
+2025-03-09 23:53:35 [info]: Loaded command: save {"metadata":{}}
+2025-03-09 23:53:35 [info]: Loaded command: test {"metadata":{}}
+2025-03-09 23:53:35 [info]: Commands loaded successfully {"metadata":{}}
+2025-03-09 23:53:38 [info]: Received SIGINT signal, shutting down gracefully {"metadata":{}}
+2025-03-09 23:59:12 [info]: Database and prepared statements initialized successfully {"metadata":{}}
+2025-03-09 23:59:12 [info]: Server started on port 3000 {"metadata":{"env":"development","appName":"Anubis"}}
+2025-03-09 23:59:12 [info]: Loaded command: save {"metadata":{}}
+2025-03-09 23:59:12 [info]: Loaded command: test {"metadata":{}}
+2025-03-09 23:59:12 [info]: Commands loaded successfully {"metadata":{}}
+2025-03-09 23:59:29 [info]: Received SIGINT signal, shutting down gracefully {"metadata":{}}
+2025-03-09 23:59:35 [info]: Loaded command: save {"metadata":{}}
+2025-03-09 23:59:35 [info]: Loaded command: test {"metadata":{}}
+2025-03-09 23:59:35 [info]: Registering 2 commands... {"metadata":{}}
+2025-03-09 23:59:36 [info]: Commands registered successfully! {"metadata":{}}
+2025-03-09 23:59:52 [info]: Database and prepared statements initialized successfully {"metadata":{}}
+2025-03-09 23:59:52 [info]: Server started on port 3000 {"metadata":{"env":"development","appName":"Anubis"}}
+2025-03-09 23:59:52 [info]: Loaded command: save {"metadata":{}}
+2025-03-09 23:59:52 [info]: Loaded command: test {"metadata":{}}
+2025-03-09 23:59:52 [info]: Commands loaded successfully {"metadata":{}}
+2025-03-09 23:59:56 [info]: Received SIGINT signal, shutting down gracefully {"metadata":{}}
+2025-03-10 00:03:26 [info]: Database and prepared statements initialized successfully {"metadata":{}}
+2025-03-10 00:03:26 [info]: Server started on port 3000 {"metadata":{"env":"development","appName":"Anubis"}}
+2025-03-10 00:03:26 [info]: Loaded command: save {"metadata":{}}
+2025-03-10 00:03:26 [info]: Loaded command: test {"metadata":{}}
+2025-03-10 00:03:26 [info]: Commands loaded successfully {"metadata":{}}
+2025-03-10 00:03:26 [info]: ✅ Successfully connected to Discord API as Anubis (1346897405177630760) {"metadata":{}}
+2025-03-10 00:03:46 [info]: Received SIGINT signal, shutting down gracefully {"metadata":{}}

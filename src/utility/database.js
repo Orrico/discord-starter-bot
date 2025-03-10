@@ -88,8 +88,8 @@ export function updateData(userId, key, value) {
 // Save data with optimized upsert operation
 export function saveData(userId, key, value) {
   try {
-    // Direct upsert using prepared statement (replaces check-then-update pattern)
-    const result = statements.saveData.run(userId, key, value, value);
+    // Fix: Remove duplicate parameter
+    const result = statements.saveData.run(userId, key, value);
     return result;
   } catch (error) {
     logger.error('Error saving data:', { error: error.message, userId, key });
